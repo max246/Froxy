@@ -1,6 +1,0 @@
-[BMiner]
-type = NVIDIA
-path = bminer/bminer
-args =  -uri $SCHEME://$USERNAME@$POOL -api 127.0.0.1:1880
-url_win = https://www.bminercontent.com/releases/bminer-v5.1.0-c65bb74-amd64.tar.xz
-

@@ -17,18 +17,33 @@ class CPUMiner(Miner):
     _frequency = 0
     _uptime = 0
 
-    def __init__(self, api_host, api_port):
+    def __init__(self, api_host, api_port, folder, bin, args, algo, username, password, scheme, pool):
         super(CPUMiner, self).__init__(api_host, api_port)
+        args = args.replace("$USERNAME", username)
+        args = args.replace("$SCHEME", scheme)
+        args = args.replace("$POOL", pool)
+        args = args.replace("$PASSWORD", password)
+        args = args.replace("$ALGO", algo)
+        args = args.replace("$APIPORT", str(api_port))
+        args = args.replace("$APIHOST", api_host)
+
+        self._command = shlex.split("miner/{}/{} {}".format(folder,bin, args))
+
+
 
     def get_status_api(self):
-        #/summary  NAME=cpuminer-opt;VER=3.7.10;API=1.0;ALGO=scrypt;CPUS=4;KHS=0.00;ACC=0;REJ=0;ACCMN=0.000;DIFF=3564823.186406;TEMP=57.0;FAN=0;FREQ=0;UPTIME=8;TS=1516143339|
-        #/threads
-        #/seturl
-        #/quit
-        #/help
+        #summary  NAME=cpuminer-opt;VER=3.7.10;API=1.0;ALGO=scrypt;CPUS=4;KHS=0.00;ACC=0;REJ=0;ACCMN=0.000;DIFF=3564823.186406;TEMP=57.0;FAN=0;FREQ=0;UPTIME=8;TS=1516143339|
+        #threads
+        #seturl
+        #quit
+        #help
         data = self.do_socket_cmd("summary")
         #print data
         self.parse_summary(data)
+
+    def stop(self):
+        self.do_request_cmd("quit")
+        #check PID that is killed
 
     def parse_summary(self,data):
         out = re.findall( r'(\w+)=(.*?)\;', data)

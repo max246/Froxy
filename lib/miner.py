@@ -1,6 +1,7 @@
 from subprocess import *
 import shlex
 import socket
+import requests
 
 
 
@@ -12,14 +13,13 @@ class Miner(object):
 
 
     def __init__(self,api_host,api_port):
-        self._command = shlex.split("aa")
         self._api_host = api_host
         self._api_port = api_port
 
     def start(self):
         #if win:
         self._handle = Popen(self._command, stdin=PIPE, stderr=PIPE, stdout=PIPE, shell=False)
-        print self._handle.stderr.readline()
+        print self._handle.stdout.readline()
 
     def stop(self):
         self._handle.pid #kill
@@ -40,8 +40,14 @@ class Miner(object):
         return  data
 
     def do_request_cmd(self,cmd):
-        r = request.get("http://{}:{}/{}".format(self._api_host, self._api_port, cmd))
-        return r.text
+        try:
+            r = requests.get("http://{}:{}/{}".format(self._api_host, self._api_port, cmd))
+            return r.text
+        except requests.exceptions.RequestException as e:
+            if str(e).find("bye") > 0:
+                return True
+            else:
+                return None
 
 
     def is_running(self):
