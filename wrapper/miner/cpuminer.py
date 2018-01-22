@@ -17,17 +17,27 @@ class CPUMiner(Miner):
     _frequency = 0
     _uptime = 0
 
-    def __init__(self, api_host, api_port, folder, bin, args, algo, username, password, scheme, pool):
-        super(CPUMiner, self).__init__(api_host, api_port)
-        args = args.replace("$USERNAME", username)
-        args = args.replace("$SCHEME", scheme)
-        args = args.replace("$POOL", pool)
-        args = args.replace("$PASSWORD", password)
-        args = args.replace("$ALGO", algo)
-        args = args.replace("$APIPORT", str(api_port))
-        args = args.replace("$APIHOST", api_host)
+    def __init__(self, data, pool):
+        super(CPUMiner, self).__init__(data["api_host"], int(data["api_port"]))
 
-        self._command = shlex.split("miner/{}/{} {}".format(folder,bin, args))
+        args = data["args"]
+        args = args.replace("$USERNAME", pool.get_username())
+        args = args.replace("$SCHEME", pool.get_scheme())
+        args = args.replace("$POOL",  pool.get_pool())
+        args = args.replace("$PASSWORD", pool.get_password())
+        args = args.replace("$ALGO", pool.get_algorithm())
+        args = args.replace("$APIPORT", str(data["api_port"]))
+        args = args.replace("$APIHOST", data["api_host"])
+
+        args_bm = data["args_benchmark"]
+        args_bm = args_bm.replace("$ALGO", pool.get_algorithm())
+        args_bm = args_bm.replace("$APIPORT", str(data["api_port"]))
+        args_bm = args_bm.replace("$APIHOST", data["api_host"])
+
+        self._command = shlex.split("miner/{}/{} {}".format(data["path"],data["bin"], args))
+        self._command_benchmark = shlex.split("miner/{}/{} {}".format(data["path"],data["bin"], args_bm))
+
+        print args
 
 
 
@@ -38,8 +48,11 @@ class CPUMiner(Miner):
         #quit
         #help
         data = self.do_socket_cmd("summary")
-        #print data
-        self.parse_summary(data)
+        if data:
+            self.parse_summary(data)
+            return True
+        else:
+            return None
 
     def stop(self):
         self.do_request_cmd("quit")
@@ -73,6 +86,12 @@ class CPUMiner(Miner):
 
     def print_summary(self):
         print "ALGO:{} VER:{} CPUS:{} KHS:{} TEMP:{}".format(self._algo,self._version,self._cpus,self._hashrate,self._temprature)
+
+    def get_summary(self):
+        return  "ALGO:{} VER:{} CPUS:{} KHS:{} TEMP:{}".format(self._algo,self._version,self._cpus,self._hashrate,self._temprature)
+
+    def get_name(self):
+        return "CPU Miner"
 
 
 
