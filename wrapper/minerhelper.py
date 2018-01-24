@@ -39,6 +39,9 @@ class MinerHelper():
     def get_pool(self):
         return self._pool
 
+    def get_pool_type(self):
+        return self._pool_type
+
 
     def find_miner(self,name):
         data = {}

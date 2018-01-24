@@ -7,6 +7,7 @@ import sys
 from wrapper.miner.cpuminer import *
 from wrapper.minerhelper import *
 
+miners = []
 
 try:
     server = liblo.Server(12345)
@@ -30,6 +31,7 @@ m = MinerHelper(filename_miner,"CPU")
 if m.init():
     print "found miner ",m.get_pool().get_miner_name()
     miner = m.get_miner()
+    miners.append(miner)
     miner.start(benchmark=doBenchmark)
 
     thread_m = MinerThread(miner)
@@ -46,7 +48,7 @@ if m.init():
     time.sleep(2)
     '''
 else:
-    print "* Couldnt find miner ", m.get_pool().get_miner_name()
+    print "* Couldnt find miner ", m.get_pool_type()
 '''
 config = ConfigParser.ConfigParser()
 config.read("miner_linux.conf")
@@ -78,12 +80,18 @@ miner.stop()
 '''
 
 def list_miner(path,args):
-    print path
-    output =  json.dumps({"miner": { "cpu": 0}})
-    liblo.send(target,"/web/miner/list",output)
+    output = {}
+    output["miner"] = []
+    i = 0
+    print output
+    for miner in miners:
+        output["miner"].append({"type" : miner.get_name() , "id" : i})
+        i += 1
+    print output
+    liblo.send(target,"/web/miner/list",json.dumps(output))
 
 def get_status(path,args):
-    print path
+    print path, args
     output = ""
     if miner.get_status_api():
         output = miner.get_summary()
