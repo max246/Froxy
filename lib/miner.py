@@ -13,6 +13,7 @@ class Miner(object):
     _command_benchmark = []
     _api_host = "127.0.0.1"
     _api_host = 4048
+    _name = "Miner"
 
 
     def __init__(self,api_host,api_port):
@@ -65,14 +66,18 @@ class Miner(object):
         return "miner class"
 
 
-
 class MinerThread(threading.Thread):
 
-    def __init__(self, miner):
+    MAX_ISSUES = 10
+
+    def __init__(self, miner, cb_failure):
         super(MinerThread, self).__init__()
 
+        self.cb_failure = cb_failure
         self._doRun = True
         self._miner = miner
+        self._flag_issue = 0
+        self._last_update = 0
         filename = datetime.datetime.now()
 
         self._log = open("log/miner_{}_{}.txt".format(self._miner.get_name(),filename),"w")
@@ -83,8 +88,22 @@ class MinerThread(threading.Thread):
             if len(output) > 0:
                 self._log.write("{}".format(output))
                 self._log.flush()
+                self._flag_issue = 0 #reset the flag issue
+                self._last_update = time.time()
                 time.sleep(0.1)
+            elif len(output) == 0:
+                self._flag_issue += 1
+
+            #When the output is always zero, it is most lickley to have die
+            if self._flag_issue > self.MAX_ISSUES:
+                self.cb_failure(self._miner)
+                self._doRun = False
+
+    def get_last_update(self):
+        return self._last_update
 
     def stop(self):
         self._doRun = False
 
+    def get_name(self):
+        return self._name

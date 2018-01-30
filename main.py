@@ -21,6 +21,9 @@ except liblo.AddressError, err:
     print str(err)
     sys.exit()
 
+def cb_failure(miner):
+    print "miner failed"
+
 config = ConfigParser.ConfigParser()
 config.read("froxy.conf")
 
@@ -34,7 +37,7 @@ if m.init():
     miners.append(miner)
     miner.start(benchmark=doBenchmark)
 
-    thread_m = MinerThread(miner)
+    thread_m = MinerThread(miner,cb_failure)
     thread_m.setDaemon(True)
     thread_m.start()
 

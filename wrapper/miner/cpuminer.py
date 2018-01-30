@@ -20,6 +20,8 @@ class CPUMiner(Miner):
     def __init__(self, data, pool):
         super(CPUMiner, self).__init__(data["api_host"], int(data["api_port"]))
 
+        self._name = pool.get_miner_name()
+
         args = data["args"]
         args = args.replace("$USERNAME", pool.get_username())
         args = args.replace("$SCHEME", pool.get_scheme())
@@ -90,8 +92,7 @@ class CPUMiner(Miner):
     def get_summary(self):
         return  "ALGO:{} VER:{} CPUS:{} KHS:{} TEMP:{}".format(self._algo,self._version,self._cpus,self._hashrate,self._temprature)
 
-    def get_name(self):
-        return "CPU Miner"
+
 
 
 
