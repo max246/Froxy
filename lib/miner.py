@@ -14,6 +14,10 @@ class Miner(object):
     _api_host = "127.0.0.1"
     _api_host = 4048
     _name = "Miner"
+    _benchmark = False
+    _start_miner = 0
+    _start_attempts = 0
+
 
 
     def __init__(self,api_host,api_port):
@@ -21,6 +25,8 @@ class Miner(object):
         self._api_port = api_port
 
     def start(self,benchmark=False):
+        self._benchmark = benchmark
+        self._start_miner = time.time()
         #if win:
         self._handle = Popen(self._command_benchmark if benchmark else self._command, stdin=PIPE, stderr=PIPE, stdout=PIPE, shell=False)
 
@@ -28,8 +34,8 @@ class Miner(object):
         return self._handle.stdout.readline()
 
     def stop(self):
-        self._handle.pid #kill
-
+        print self._handle.pid #kill
+        self._handle.kill()
 
     def download(self):
         print "downloading...s"
@@ -62,6 +68,15 @@ class Miner(object):
     def is_running(self):
         return True
 
+    def is_benchmark(self):
+        return self._benchmark
+
+    def get_start_miner(self):
+        return self._start_miner
+
+    def get_hashrate(self):
+        return 0
+
     def get_name(self):
         return "miner class"
 
@@ -70,10 +85,11 @@ class MinerThread(threading.Thread):
 
     MAX_ISSUES = 10
 
-    def __init__(self, miner, cb_failure):
+    def __init__(self, miner, cb_failure,cb_benchmark):
         super(MinerThread, self).__init__()
 
         self.cb_failure = cb_failure
+        self._cb_benchmark = cb_benchmark
         self._doRun = True
         self._miner = miner
         self._flag_issue = 0
@@ -85,6 +101,14 @@ class MinerThread(threading.Thread):
     def run(self):
         while self._doRun:
             output = self._miner.read()
+            #print output
+            if self._miner.is_benchmark() and (time.time() - self._miner.get_start_miner()) > 40:
+                self._miner.get_status_api()
+                self._miner.stop()
+                self._cb_benchmark(self._miner)
+                break
+
+
             if len(output) > 0:
                 self._log.write("{}".format(output))
                 self._log.flush()

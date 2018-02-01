@@ -92,6 +92,9 @@ class CPUMiner(Miner):
     def get_summary(self):
         return  "ALGO:{} VER:{} CPUS:{} KHS:{} TEMP:{}".format(self._algo,self._version,self._cpus,self._hashrate,self._temprature)
 
+    def get_hashrate(self):
+        return float(self._hashrate)*1000.0
+
 
 
 

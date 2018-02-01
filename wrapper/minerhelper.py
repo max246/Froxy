@@ -1,7 +1,7 @@
 import ConfigParser
 from model.pool import *
 from wrapper.miner.cpuminer import *
-
+from wrapper.miner.ethdcrminer64 import *
 
 
 class MinerHelper():
@@ -30,7 +30,6 @@ class MinerHelper():
             options = self._config_pool.options(type)
             for option in options:
                 data[option] = self._config_pool.get(type,option)
-
             self._pool = Pool(data)
             return True
         else:
@@ -52,6 +51,8 @@ class MinerHelper():
 
             if name == "CPUMinerOPT-4WAY":
                 self._miner = CPUMiner(data,self._pool)
+            elif name == "ClaymoreAMD" or name == "ClaymoreNVIDIA":
+                self._miner = EthDcrMiner64(data, self._pool)
             else:
                 return None
 

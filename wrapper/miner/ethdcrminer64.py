@@ -7,20 +7,29 @@ class EthDcrMiner64(Miner):
 
     dcri = [20,30,40]
 
-    def __init__(self, api_port, folder, bin, args, args_e, epool, euser, epassword, allcoins):
-        super(CPUMiner, self).__init__("127.0.0.1", api_port)
-        args_e = args_e.replace("$EPOOL", epool)
-        args_e = args_e.replace("$EUSERNAME", euser)
-        args_e = args_e.replace("$EPASSWORD", epassword)
+    def __init__(self, data, pool):
+        print data
+        super(EthDcrMiner64, self).__init__(data["api_host"], int(data["api_port"]))
 
-        args = args.replace("$APIPORT",api_port)
-        args = args.replace("$ALLCOINS",allcoins)
+        self._name = pool.get_miner_name()
+        args_e = data["args_e"]
+        args_e = args_e.replace("$EPOOL",pool.get_pool())
+        args_e = args_e.replace("$EUSERNAME", pool.get_username())
+        args_e = args_e.replace("$EPASSWORD", pool.get_password())
+
+        args = data["args"]
+        args = args.replace("$APIPORT",data["api_host"])
+        args = args.replace("$ALLCOINS",data["api_port"])
 
         args = "{} {}".format(args, args_e)
 
+        args_bm = data["args_benchmark"]
+        #args_bm = args_bm.replace("$ALGO", pool.get_coin())
+        args_bm = args_bm.replace("$APIPORT", str(data["api_port"]))
+        args_bm = args_bm.replace("$APIHOST", data["api_host"])
 
-
-        self._command = shlex.split("miner/{}/{} {}".format(folder,bin, args))
+        self._command = shlex.split("miner/{}/{} {}".format(data["path"], data["bin"], args))
+        self._command_benchmark = shlex.split("miner/{}/{} {}".format(data["path"], data["bin"], args_bm))
 
     def get_status_api(self):
 

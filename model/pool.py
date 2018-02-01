@@ -19,6 +19,9 @@ class Pool():
     def get_algorithm(self):
         return self._data["algorithm"]
 
+    def get_coin(self):
+        return self._data["dcoin"]
+
     def get_scheme(self):
         return self._data["scheme"]
 

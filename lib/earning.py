@@ -1,3 +1,4 @@
+import requests
 
 
 class Earning:
@@ -13,14 +14,46 @@ class Earning:
     HOUR = 60
     DAY = 60 * 24
     WEEK = 60 * 24 * 7
+    MONTH = DAY * 30
 
-    def __init__(self,difficulty,block_time,block_reward):
-        self._network_hash = difficulty/block_time
-        self._difficulty = difficulty
-        self._block_time = block_time
-        self._block_reward = block_reward
-        self._block_per_minute = 60.0/block_time
-        self._coin_per_minute = self._block_per_minute * block_reward
+    def __init__(self):
+        self._coins = {}
+        self._url = "https://whattomine.com/coins.json"
+        self.update_coins()
+
+
+    def update_coins(self):
+        r = requests.get(self._url)
+        if r.status_code == 200:
+            coins = r.json()["coins"]
+            for coin in coins:
+                self._coins[coin] = {}
+                for value in coins[coin]:
+                    self._coins[coin][value] = coins[coin][value]
+
+    def get_coins(self):
+        coins = []
+        for coin in self._coins:
+            coins.append(coin)
+        return coins
+
+    def select_coin(self,coin):
+        if coin in self._coins:
+            self.pull_coin(coin)
+            return True
+        else:
+            return False
+
+    def pull_coin(self,coin):
+        self.update_coins()
+        data = self._coins[coin]
+
+        self._difficulty = data["difficulty24"]
+        self._block_time = float(data["block_time"])
+        self._network_hash = self._difficulty / self._block_time
+        self._block_reward = data["block_reward"]
+        self._block_per_minute = 60.0 / self._block_time
+        self._coin_per_minute = self._block_per_minute * self._block_reward
 
     def calculate(self,hashrate, time=HOUR):
         user_ratio = hashrate / self._network_hash
@@ -28,5 +61,8 @@ class Earning:
 
 
 
-#a = Earning(17240277307812.700,14.0,10.0)
-#print a.calculate(20000000)
+
+#a = Earning()
+#print a.select_coin("Electroneum")
+#print a.calculate(55, Earning.DAY)
+#print a.get_coins()
